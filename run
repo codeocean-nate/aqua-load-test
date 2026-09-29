@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Capsule entry point for the tiered Aqua load test.
+#
+# Positional parameters (App Panel order):
+#   1 tiers           simulated-user counts, e.g. "2,4,8"
+#   2 prompt set      "long" (5-10 min per run) or "short" (~1 min)
+#   3 runs per user   prompts each simulated user sends
+#   4 stagger         seconds between user starts
+#   5 stop error rate stop once a tier's error rate reaches this, e.g. 0.5
+#   6 domain          deployment URL (default below)
+#
+# Needs a Code Ocean API token attached as a capsule secret (Settings > Credentials).
+# The aqua CLI is taken from PATH or downloaded from the deployment at run time.
+set -euo pipefail
+
+# Set this to your deployment, or pass it as parameter 6 or $CODEOCEAN_DOMAIN.
+DEFAULT_DOMAIN=""
+
+exec python3 -u "$(dirname "$0")/aqua_load_test.py" \
+  --tiers "${1:-2,4,8}" \
+  --prompt "${2:-long}" \
+  --runs-per-user "${3:-1}" \
+  --stagger "${4:-1}" \
+  --stop-error-rate "${5:-0.5}" \
+  --domain "${6:-${CODEOCEAN_DOMAIN:-$DEFAULT_DOMAIN}}" \
+  --out "${RESULTS_DIR:-/results}" \
+  --yes
